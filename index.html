@@ -323,26 +323,28 @@
         function animate() {
             const p = window.currentPatient;
             
+            const frame = Math.floor(currentFrame); // Get integer frame
+            
             // Combined update for efficiency
             Plotly.update('trajectory-plot', {
                 x: [
-                    p.time_dense.slice(0, currentFrame),
-                    [p.time_dense[currentFrame]]
+                    p.time_dense.slice(0, frame),
+                    [p.time_dense[frame]]
                 ],
                 y: [
-                    p.risk_dense.slice(0, currentFrame),
-                    [p.risk_dense[currentFrame]]
+                    p.risk_dense.slice(0, frame),
+                    [p.risk_dense[frame]]
                 ],
                 z: [
-                    window.zDataDense.slice(0, currentFrame),
-                    [window.zDataDense[currentFrame]]
+                    window.zDataDense.slice(0, frame),
+                    [window.zDataDense[frame]]
                 ],
-                'line.color': [window.denseColors.slice(0, currentFrame)],
-                'marker.color': [window.denseColors[currentFrame]]
+                'line.color': [window.denseColors.slice(0, frame)],
+                'marker.color': [window.denseColors[frame]]
             }, {}, [0, 1]);
         
-            updatePanel(currentFrame, true);
-            currentFrame++;
+            updatePanel(frame, true);
+            currentFrame += 0.5; // Increment by half - makes it slower
         
             if (currentFrame >= p.time_dense.length) {
                 finishAnimation();
