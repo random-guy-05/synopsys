@@ -323,16 +323,16 @@
         function animate() {
             const p = window.currentPatient;
             
-            // Use Plotly.restyle instead of update - it's faster
+            // Use time_dense for smooth animation
             Plotly.restyle('trajectory-plot', {
                 x: [
-                    p.time.slice(0, currentFrame + 1),
-                    [p.time[currentFrame]],
+                    p.time_dense.slice(0, currentFrame + 1),
+                    [p.time_dense[currentFrame]],
                     []
                 ],
                 y: [
-                    p.risk.slice(0, currentFrame + 1),
-                    [p.risk[currentFrame]],
+                    p.risk_dense.slice(0, currentFrame + 1),
+                    [p.risk_dense[currentFrame]],
                     []
                 ],
                 z: [
@@ -347,7 +347,7 @@
             updatePanel(currentFrame, true);
             currentFrame++;
         
-            if (currentFrame >= p.time.length) {
+            if (currentFrame >= p.time_dense.length) {  // Also change this check
                 finishAnimation();
             }
         }
