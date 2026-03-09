@@ -184,12 +184,13 @@
             // Use the same data for both dense and sparse (since you only have one set)
             const colors = p.risk_dense.map(r => r < 0.3 ? '#34d399' : r < 0.6 ? '#fbbf24' : '#ef4444');
             const sparseColors = p.risk.map(r => r < 0.3 ? '#34d399' : r < 0.6 ? '#fbbf24' : '#ef4444');
+
+            const zKey = p.primary_axis;
+            const zLabel = p.primary_label;
             
             const zDataDense = p.vitals_dense[zKey];
             const zDataSparse = p.vitals[zKey];
-            
-            const zKey = p.primary_axis;
-            const zLabel = p.primary_label;
+        
             
             window.zDataDense = zDataDense;
             window.zDataSparse = zDataSparse;
