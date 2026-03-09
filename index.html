@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Trajectory Analysis</title>
     <!-- 1. CORRECT PLOTLY CDN -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -101,6 +101,7 @@
             <div class="controls">
                 <button id="play-btn">Play</button>
                 <button id="reset-btn">Reset</button>
+                <button id="skip-btn">Reset</button>
                 <select id="patient-select">
                     <option value="">Select Patient ID</option>
                 </select>
@@ -159,10 +160,6 @@
             const p = DATA.patients[idx];
             window.currentPatient = p;
             
-            // Set static badges
-            const badge = document.getElementById('outcome-badge');
-            badge.className = p.actual_outcome === 0 ? 'badge survived' : 'badge deceased';
-            badge.textContent = p.actual_outcome === 0 ? 'Survived' : 'Deceased';
 
             // BUILD VITALS GRID
             const container = document.getElementById('vitals-container');
@@ -178,13 +175,14 @@
             });
 
             // Prepare visual data
-            const colors = p.risk_dense.map(r => r < 0.3 ? '#34d399' : r < 0.6 ? '#fbbf24' : '#ef4444');
-            const sparseColors = p.risk.map(r => r < 0.3 ? '#34d399' : r < 0.6 ? '#fbbf24' : '#ef4444');
+            // Use the same data for both dense and sparse (since you only have one set)
+            const colors = p.risk.map(r => r < 0.3 ? '#34d399' : r < 0.6 ? '#fbbf24' : '#ef4444');
+            
+            const zDataDense = p.vitals[zKey];
+            const zDataSparse = p.vitals[zKey];
             
             const zKey = p.primary_axis;
             const zLabel = p.primary_label;
-            const zDataDense = p.vitals_dense[zKey];
-            const zDataSparse = p.vitals[zKey];
             
             window.zDataDense = zDataDense;
             window.zDataSparse = zDataSparse;
