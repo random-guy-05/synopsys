@@ -89,9 +89,12 @@
 
         /* MAIN VISUALIZATION */
         .viz-panel {
-            min-height: 600px;
+            height: 600px; /* Fixed height so Plotly has room to render */
+            width: 100%;
             background: #fafafa;
+            border: 1px solid #f0f0f0; /* Very faint border to see the area */
         }
+
 
         /* SIDEBAR: Typographic Focus */
         .sidebar {
@@ -144,6 +147,12 @@
             width: 0%;
             transition: width 0.4s ease;
         }
+        #trajectory-plot {
+            height: 600px !important; /* Force the height */
+            width: 100%;
+            background: #fafafa; /* This matches your gray box */
+        }
+
 
         @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; padding: 20px; }
@@ -470,6 +479,13 @@
                 this.textContent = 'Stop';
             }
         };
+
+        window.onresize = function() {
+            Plotly.Plots.resize('trajectory-plot');
+        };
+        // Force an initial resize after 100ms
+        setTimeout(() => { Plotly.Plots.resize('trajectory-plot'); }, 100);
+
     </script>
 </body>
 </html>
