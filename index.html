@@ -244,21 +244,27 @@
                         title: 'Time (h)', 
                         gridcolor: '#333a52', 
                         backgroundcolor: '#1a1d2e',
-                        showspikes: false // Remove hover lines
+                        showspikes: false,
+                        range: [0, Math.max(...p.time_dense) * 1.05] // LOCK X AXIS
                     },
                     yaxis: { 
                         title: 'Risk', 
                         gridcolor: '#333a52', 
                         backgroundcolor: '#1a1d2e', 
                         tickformat: '.0%',
-                        showspikes: false // Remove hover lines
+                        showspikes: false,
+                        range: [0, 1] // LOCK Y AXIS (0-100%)
                     },
                     zaxis: { 
                         title: zLabel, 
                         gridcolor: '#333a52', 
                         backgroundcolor: '#1a1d2e', 
                         tickformat: tickFmt,
-                        showspikes: false // Remove hover lines
+                        showspikes: false,
+                        range: [ // LOCK Z AXIS
+                            Math.min(...zDataDense.filter(v => v !== null)) * 0.95,
+                            Math.max(...zDataDense.filter(v => v !== null)) * 1.05
+                        ]
                     },
                     camera: { eye: {x:1.6, y:1.2, z:1.2} }
                 },
