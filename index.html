@@ -2,204 +2,191 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>Patient Trajectory Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physiograph | GNN Trajectory</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
+        /* SCIENTIFIC INSTRUMENT THEME */
         :root {
-            --bg-color: #1a1d2e;
-            --card-bg: #22283d;
-            --border-color: #333a52;
-            --text-primary: #e4e4e7;
-            --text-secondary: #9ca3af;
-            --accent: #5b7cdb;
+            --bg: #0a0a0c;            /* Deeper black */
+            --panel: #141417;         /* High-contrast panels */
+            --border: #2d2d33;        /* Sharp borders */
+            --text: #d1d1d1;
+            --accent: #00ff41;        /* Terminal Green */
+            --warning: #ffcf00;       /* Warning Amber */
+            --critical: #ff3e3e;      /* Medical Red */
+            --mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; border-radius: 0 !important; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.5;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            overflow-x: hidden;
         }
 
-        .header {
-            background: var(--card-bg);
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .header h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .header p { color: var(--text-secondary); font-size: 0.9rem; }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        .controls-bar {
-            background: var(--card-bg);
-            padding: 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border-color);
+        /* HEADER: Industrial/Research Style */
+        .system-header {
+            background: var(--panel);
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--border);
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
         }
 
-        select, button {
-            background: #2d3548;
-            color: var(--text-primary);
-            border: 1px solid #434d67;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
+        .brand { letter-spacing: 2px; font-weight: 800; color: var(--accent); font-family: var(--mono); }
+        .status-tag { font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 6px; }
+
+        .container { display: grid; grid-template-columns: 1fr 320px; height: calc(100vh - 50px); }
+
+        /* VIEWPORT: The Graph Area */
+        .viewport {
+            position: relative;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 30px 30px; /* Technical grid background */
+            display: flex;
+            flex-direction: column;
         }
 
-        button.primary { background: var(--accent); border: none; }
-        button.primary:hover { background: #6b8ae6; }
+        /* CONTROL TERMINAL */
+        .terminal-controls {
+            background: rgba(20, 20, 23, 0.9);
+            border-bottom: 1px solid var(--border);
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+        }
 
-        .main-content {
+        button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--mono);
+            padding: 5px 15px;
+            text-transform: uppercase;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        button:hover { border-color: var(--accent); color: var(--accent); }
+        button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+        select {
+            background: var(--bg);
+            color: var(--accent);
+            border: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 0 10px;
+        }
+
+        /* SIDEBAR: Data Density */
+        .sidebar {
+            background: var(--panel);
+            border-left: 2px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .data-module h3 {
+            font-family: var(--mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .readout-large {
+            font-family: var(--mono);
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        /* Vitals Grid: Instrument Look */
+        .vitals-monitor {
             display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 1rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
         }
 
-        @media (max-width: 1024px) {
-            .main-content { grid-template-columns: 1fr; }
+        .vital-box {
+            background: var(--bg);
+            padding: 10px;
         }
 
-        .viz-panel {
-            background: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            min-height: 600px;
+        .label { font-size: 9px; text-transform: uppercase; color: #666; display: block; }
+        .value { font-family: var(--mono); font-size: 16px; color: var(--text); }
+
+        /* Risk Bar: Non-Gradient, Stepped Style */
+        .risk-gauge {
+            height: 12px;
+            background: #111;
+            border: 1px solid var(--border);
             position: relative;
         }
+        .risk-level { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .info-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            margin-bottom: 1rem;
-        }
-
-        .metric { margin-bottom: 1rem; }
-        .metric-label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
-        .metric-value { font-size: 1.5rem; font-weight: 600; }
-
-        .risk-bar-container {
-            background: var(--bg-color);
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 0.5rem;
-        }
-        .risk-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #34d399, #fbbf24, #ef4444);
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .vitals-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-
-        .vital-item {
-            background: var(--bg-color);
-            padding: 0.75rem;
-            border-radius: 6px;
-            border-left: 2px solid var(--accent);
-        }
-
-        .vital-name { color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.2rem; }
-        .vital-val { font-weight: 600; font-size: 1.1rem; }
-
-        .badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 1px solid transparent;
-        }
-        .badge.survived { 
-            background: transparent; 
-            color: #44ef6f; 
-            border: none; 
-            padding: 0; 
-            font-size: 0.9rem; /* Simple red text */
-        }
-        .badge.deceased { 
-            background: transparent; 
-            color: #ef4444; 
-            border: none; 
-            padding: 0; 
-            font-size: 0.9rem; /* Simple red text */
-        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>ICU Risk Trajectory Analysis</h1>
-        <p>GNN-based temporal outcome prediction</p>
-    </div>
+
+    <header class="system-header">
+        <div class="brand">PHYSIOGRAPH // SYNOPSYS</div>
+        <div class="status-tag">SYSTEM: ACTIVE [GNN_MODEL_V4]</div>
+    </header>
 
     <div class="container">
-        <div class="controls-bar">
-            <button class="primary" id="play-btn">Play</button>
-            <button id="skip-btn">Skip</button>
-            <button id="reset-btn">Reset</button>
-            <select id="patient-select" style="flex-grow: 1;"></select>
-            <button id="rotate-btn">Rotate</button>
-        </div>
-
-        <div class="main-content">
-            <div class="viz-panel">
-                <div id="trajectory-plot" style="height: 100%; width: 100%;"></div>
+        <main class="viewport">
+            <div class="terminal-controls">
+                <button id="play-btn" class="active">EXEC RUN</button>
+                <button id="reset-btn">RESET</button>
+                <select id="patient-select">
+                    <option>SELECT SUBJECT_ID...</option>
+                </select>
+                <button id="rotate-btn" style="margin-left: auto;">3D_ROT</button>
             </div>
+            <div id="trajectory-plot" style="flex-grow: 1;"></div>
+        </main>
 
-            <div class="sidebar">
-                <div class="info-card">
-                    <div class="metric">
-                        <div class="metric-label">Current Mortality Risk</div>
-                        <div class="metric-value" id="risk-value">0%</div>
-                        <div class="risk-bar-container">
-                            <div class="risk-bar-fill" id="risk-fill"></div>
-                        </div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">Outcome</div>
-                        <span id="outcome-badge" class="badge">--</span>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">Time Elapsed</div>
-                        <div class="metric-value" id="icu-time">0.0h</div>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <div class="metric-label" style="margin-bottom: 0.5rem;">Most Active Vitals</div>
-                    <div class="vitals-grid" id="vitals-container">
-                        <!-- Dynamic Content Here -->
-                    </div>
+        <aside class="sidebar">
+            <div class="data-module">
+                <h3>Mortality Probability</h3>
+                <div class="readout-large" id="risk-value">00.0%</div>
+                <div class="risk-gauge">
+                    <div class="risk-level" id="risk-fill"></div>
                 </div>
             </div>
-        </div>
+
+            <div class="data-module">
+                <h3>Temporal Progress</h3>
+                <div class="readout-large" id="icu-time" style="color: var(--text);">0.0<span style="font-size: 14px"> HR</span></div>
+            </div>
+
+            <div class="data-module">
+                <h3>Live Vital Readout</h3>
+                <div class="vitals-monitor" id="vitals-container">
+                    <!-- Data populated by JS -->
+                    <div class="vital-box"><span class="label">HR</span><span class="value">--</span></div>
+                    <div class="vital-box"><span class="label">SBP</span><span class="value">--</span></div>
+                </div>
+            </div>
+
+            <div class="data-module" style="margin-top: auto;">
+                <h3>Subject Outcome</h3>
+                <div id="outcome-badge" style="font-family: var(--mono); font-size: 14px;">PENDING...</div>
+            </div>
+        </aside>
     </div>
 
     <script>
